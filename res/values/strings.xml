@@ -4,5 +4,5 @@
     <string name="app_name">Group_project1</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-
+	<string name="time">100</string>
 </resources>
