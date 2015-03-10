@@ -1,5 +1,6 @@
 package com.group.group_project1;
 
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -14,6 +15,9 @@ import android.widget.*;
 public class MainActivity extends Activity {
 	private int remainTime = 100;
 	private TextView timeText;
+	private TableLayout playTableLayout;
+	private MyImageButton Images[];
+	private int hasOpen = 0;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -26,29 +30,77 @@ public class MainActivity extends Activity {
 
 		// 產生layout，當成一個容器來存放物件
 
-		TableLayout layout = (TableLayout) findViewById(R.id.user_list);
-		for (int f = 0; f <= 4; f++) { // tr為一列容器，用來存放按鈕
-			TableRow tr = new TableRow(this);
-			for (int c = 0; c <= 4; c++) {
-				ImageButton b = new ImageButton(this);
-				b.setImageDrawable(getResources().getDrawable(
-						R.drawable.ic_launcher));
-				b.setOnClickListener(click);
-
-				tr.addView(b);
-			} // for // 將tr加入layout
-			layout.addView(tr);
-		} // for
-
-		// 將layout加入畫面中
+		playTableLayout = (TableLayout) findViewById(R.id.user_list);
+		genLevel(1);
 	}
-	
+
+	private void genLevel(int input) {
+		Images = new MyImageButton[25];
+		int sizeX = 4; // start from 1
+		int sizeY = 4;
+		int numberOftypes = Math.abs(sizeX * sizeY / 2);
+		int typeCount[] = new int[numberOftypes + 1];
+		for (int i = 0; i < sizeX; i++) { // tr為一列容器，用來存放按鈕
+			TableRow tr = new TableRow(this);
+			for (int j = 0; j < sizeY; j++) {
+				int index = i * (sizeY) + j;
+				Images[index] = new MyImageButton(this);
+				// Images[index].setImageDrawable(getResources().getDrawable(R.drawable.ic_launcher));
+				Images[index].setOnClickListener(click);
+				tr.addView(Images[index]);
+				int type = getRandomInt(1, numberOftypes);
+				while (typeCount[type] >= 2) {
+					type = getRandomInt(1, numberOftypes);
+				}
+				typeCount[type]++;
+				Images[index].setType(type);
+			} // for // 將tr加入layout
+			playTableLayout.addView(tr);
+		} // for
+	}
+
+	private int getRandomInt(int min, int max) {
+		Random r = new Random();
+		return r.nextInt(max - min + 1) + min;
+	}
+
 	private OnClickListener click = new OnClickListener() {
+		private int openNumber = 0;
+		private MyImageButton lastbutton;
+		private MyImageButton button;
+		Timer showTimer = new Timer();
+		private boolean canClick = true;
+
 		public void onClick(View v) {
-			ImageButton button = (ImageButton) v;
-			button.setImageDrawable(getResources().getDrawable(
-					R.drawable.ic_launcher));
+			if (!canClick)
+				return;
+			button = (MyImageButton) v;
+			button.open();
+			openNumber++;
+			if (openNumber == 2) {
+				if (lastbutton.getType() != button.getType()) {
+					canClick = false;
+					Handler myHandler = new Handler();
+					// 幾秒後(delaySec)呼叫runTimerStop這個Runnable，再由這個Runnable去呼叫你想要做的事情
+					myHandler.postDelayed(runTimerStop, 500);
+					// 移除語法:myHandler.removeCallbacks(runTimerStop);
+				}
+				else {
+					hasOpen = hasOpen + 2;
+				}
+				openNumber = 0;
+			} else {
+				lastbutton = button;
+			}
 		}
+
+		private Runnable runTimerStop = new Runnable() {
+			public void run() {
+				lastbutton.close();
+				button.close();
+				canClick = true;
+			}
+		};
 	};
 
 	private TimerTask task = new TimerTask() {
@@ -58,7 +110,7 @@ public class MainActivity extends Activity {
 			handler.sendMessage(msg);
 		}
 	};
-	
+
 	private Handler handler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
@@ -74,7 +126,7 @@ public class MainActivity extends Activity {
 			}
 		}
 	};
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -93,4 +145,5 @@ public class MainActivity extends Activity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
+
 }
