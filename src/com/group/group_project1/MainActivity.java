@@ -13,30 +13,37 @@ import android.view.View.OnClickListener;
 import android.widget.*;
 
 public class MainActivity extends Activity {
-	private int remainTime = 100;
+	private Timer gameTimer;
+	private int remainTime = 10;
+	private TextView levelText;
 	private TextView timeText;
 	private TableLayout playTableLayout;
 	private MyImageButton Images[];
+	private int totalCard = 0;
 	private int hasOpen = 0;
+	private int level = 0;
+	private int score = 0;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		levelText = (TextView) findViewById(R.id.textView1);
 		timeText = (TextView) findViewById(R.id.timer);
 		// 宣告Timer
-		Timer timer01 = new Timer();
+		gameTimer = new Timer();
 		// 設定Timer(task為執行內容，0代表立刻開始,間格1秒執行一次)
-		timer01.schedule(task, 0, 1000);
+		gameTimer.schedule(task, 0, 1000);
 
 		// 產生layout，當成一個容器來存放物件
 
 		playTableLayout = (TableLayout) findViewById(R.id.user_list);
-		genLevel(1);
+		totalCard = genLevel(++level);
 	}
 
-	private void genLevel(int input) {
+	private int genLevel(int input) {
+		levelText.setText("Level " + String.valueOf(input));
 		Images = new MyImageButton[25];
-		int sizeX = 4; // start from 1
+		int sizeX = input; // start from 1
 		int sizeY = 4;
 		int numberOftypes = Math.abs(sizeX * sizeY / 2);
 		int typeCount[] = new int[numberOftypes + 1];
@@ -57,6 +64,8 @@ public class MainActivity extends Activity {
 			} // for // 將tr加入layout
 			playTableLayout.addView(tr);
 		} // for
+
+		return sizeX * sizeY;
 	}
 
 	private int getRandomInt(int min, int max) {
@@ -70,23 +79,26 @@ public class MainActivity extends Activity {
 		private MyImageButton button;
 		Timer showTimer = new Timer();
 		private boolean canClick = true;
+		private Handler myHandler = new Handler();
 
 		public void onClick(View v) {
-			if (!canClick)
-				return;
 			button = (MyImageButton) v;
+			if (!canClick || button.isOpen())
+				return;
 			button.open();
 			openNumber++;
 			if (openNumber == 2) {
 				if (lastbutton.getType() != button.getType()) {
 					canClick = false;
-					Handler myHandler = new Handler();
 					// 幾秒後(delaySec)呼叫runTimerStop這個Runnable，再由這個Runnable去呼叫你想要做的事情
-					myHandler.postDelayed(runTimerStop, 500);
-					// 移除語法:myHandler.removeCallbacks(runTimerStop);
-				}
-				else {
+					myHandler.postDelayed(runTimerStop, 200);
+				} else {
 					hasOpen = hasOpen + 2;
+					if (totalCard == hasOpen) {
+						hasOpen = 0;
+						playTableLayout.removeAllViewsInLayout();
+						totalCard = genLevel(++level);
+					}
 				}
 				openNumber = 0;
 			} else {
@@ -99,6 +111,8 @@ public class MainActivity extends Activity {
 				lastbutton.close();
 				button.close();
 				canClick = true;
+				// 移除語法
+				myHandler.removeCallbacks(runTimerStop);
 			}
 		};
 	};
@@ -120,6 +134,10 @@ public class MainActivity extends Activity {
 			case 1:
 				remainTime--;
 				timeText.setText(String.valueOf(remainTime));
+				if (remainTime == 0) {
+					gameTimer.cancel();
+					setContentView(R.layout.end_layout);
+				}
 				break;
 			default:
 				break;

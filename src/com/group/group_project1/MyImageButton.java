@@ -5,6 +5,7 @@ import android.widget.ImageButton;
 
 public class MyImageButton extends ImageButton {
 	private int type = 0;
+	private boolean isOpen = false;
 	private static int images[] = { R.drawable.ic_launcher, R.drawable.card1,
 			R.drawable.card2, R.drawable.card3, R.drawable.card4,
 			R.drawable.card5, R.drawable.card6, R.drawable.card7,
@@ -21,10 +22,16 @@ public class MyImageButton extends ImageButton {
 
 	public void open() {
 		setImageDrawable(getResources().getDrawable(images[type]));
+		isOpen = true;
 	}
 
 	public void close() {
 		setImageDrawable(getResources().getDrawable(images[0]));
+		isOpen = false;
+	}
+	
+	public boolean isOpen() {
+		return isOpen;
 	}
 	
 	public void setType(int input) {
