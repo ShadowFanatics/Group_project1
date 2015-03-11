@@ -14,7 +14,7 @@ import android.widget.*;
 
 public class MainActivity extends Activity {
 	private Timer gameTimer;
-	private int remainTime = 10;
+	private int remainTime = 30;
 	private TextView levelText;
 	private TextView timeText;
 	private TableLayout playTableLayout;
@@ -23,6 +23,7 @@ public class MainActivity extends Activity {
 	private int hasOpen = 0;
 	private int level = 0;
 	private int score = 0;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -38,6 +39,7 @@ public class MainActivity extends Activity {
 
 		playTableLayout = (TableLayout) findViewById(R.id.user_list);
 		totalCard = genLevel(++level);
+		
 	}
 
 	private int genLevel(int input) {
@@ -51,8 +53,7 @@ public class MainActivity extends Activity {
 			TableRow tr = new TableRow(this);
 			for (int j = 0; j < sizeY; j++) {
 				int index = i * (sizeY) + j;
-				Images[index] = new MyImageButton(this);
-				// Images[index].setImageDrawable(getResources().getDrawable(R.drawable.ic_launcher));
+				Images[index] = new MyImageButton(this,MainActivity.this);
 				Images[index].setOnClickListener(click);
 				tr.addView(Images[index]);
 				int type = getRandomInt(1, numberOftypes);
@@ -80,30 +81,12 @@ public class MainActivity extends Activity {
 		Timer showTimer = new Timer();
 		private boolean canClick = true;
 		private Handler myHandler = new Handler();
-
 		public void onClick(View v) {
 			button = (MyImageButton) v;
 			if (!canClick || button.isOpen())
 				return;
 			button.open();
-			openNumber++;
-			if (openNumber == 2) {
-				if (lastbutton.getType() != button.getType()) {
-					canClick = false;
-					// 幾秒後(delaySec)呼叫runTimerStop這個Runnable，再由這個Runnable去呼叫你想要做的事情
-					myHandler.postDelayed(runTimerStop, 200);
-				} else {
-					hasOpen = hasOpen + 2;
-					if (totalCard == hasOpen) {
-						hasOpen = 0;
-						playTableLayout.removeAllViewsInLayout();
-						totalCard = genLevel(++level);
-					}
-				}
-				openNumber = 0;
-			} else {
-				lastbutton = button;
-			}
+			myHandler.postDelayed(openDelay, 500);
 		}
 
 		private Runnable runTimerStop = new Runnable() {
@@ -113,6 +96,29 @@ public class MainActivity extends Activity {
 				canClick = true;
 				// 移除語法
 				myHandler.removeCallbacks(runTimerStop);
+			}
+		};
+		private Runnable openDelay = new Runnable() {
+			public void run() {
+				openNumber++;
+				if (openNumber == 2) {
+					if (lastbutton.getType() != button.getType()) {
+						canClick = false;
+						// 幾秒後(delaySec)呼叫runTimerStop這個Runnable，再由這個Runnable去呼叫你想要做的事情
+						myHandler.postDelayed(runTimerStop, 200);
+					} else {
+						hasOpen = hasOpen + 2;
+						if (totalCard == hasOpen) {
+							hasOpen = 0;
+							playTableLayout.removeAllViewsInLayout();
+							totalCard = genLevel(++level);
+						}
+					}
+					openNumber = 0;
+				} else {
+					lastbutton = button;
+				}
+				myHandler.removeCallbacks(openDelay);
 			}
 		};
 	};
