@@ -14,7 +14,7 @@ import android.widget.*;
 
 public class MainActivity extends Activity {
 	private Timer gameTimer;
-	private int remainTime = 30;
+	private int remainTime;
 	private TextView levelText;
 	private TextView timeText;
 	private TextView scoreText;
@@ -25,21 +25,31 @@ public class MainActivity extends Activity {
 	private int level = 0;
 	private int score = 0;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+	private void init() {
 		levelText = (TextView) findViewById(R.id.textView1);
 		timeText = (TextView) findViewById(R.id.timer);
 		scoreText = (TextView) findViewById(R.id.scoreText);
-		// 宣告Timer
+		playTableLayout = (TableLayout) findViewById(R.id.user_list);
+		remainTime = 30;
+		totalCard = 0;
+		hasOpen = 0;
+		level = 0;
+		score = 0;
 		gameTimer = new Timer();
 		// 設定Timer(task為執行內容，0代表立刻開始,間格1秒執行一次)
-		gameTimer.schedule(task, 0, 1000);
+		gameTimer.schedule(new TimerTask() {
+			public void run() {
+				Message msg = new Message();
+				msg.what = 1;
+				handler.sendMessage(msg);
+			}
+		}, 0, 1000);
+	}
 
-		// 產生layout，當成一個容器來存放物件
-
-		playTableLayout = (TableLayout) findViewById(R.id.user_list);
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		init();
 		totalCard = genLevel(++level);
 
 	}
@@ -48,7 +58,7 @@ public class MainActivity extends Activity {
 		levelText.setText("Level " + String.valueOf(input));
 		Images = new MyImageButton[25];
 		int sizeX = input; // start from 1
-		if ( input >= 4 )
+		if (input >= 4)
 			sizeX = 4;
 		int sizeY = 4;
 		int numberOftypes = Math.abs(sizeX * sizeY / 2);
@@ -140,14 +150,6 @@ public class MainActivity extends Activity {
 		};
 	};
 
-	private TimerTask task = new TimerTask() {
-		public void run() {
-			Message msg = new Message();
-			msg.what = 1;
-			handler.sendMessage(msg);
-		}
-	};
-
 	private Handler handler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
@@ -159,13 +161,27 @@ public class MainActivity extends Activity {
 				timeText.setText(String.valueOf(remainTime));
 				if (remainTime <= 0) {
 					gameTimer.cancel();
+					gameTimer = null;
 					setContentView(R.layout.end_layout);
+					TextView scoreShow = (TextView) findViewById(R.id.textView3);
+					scoreShow.setText("你得到分數: " + score);
+					Button restart = (Button) findViewById(R.id.restartButton);
+					restart.setOnClickListener(reset);
 				}
 				break;
 			default:
 				break;
 			}
 		}
+	};
+
+	private OnClickListener reset = new OnClickListener() {
+		public void onClick(View v) {
+			setContentView(R.layout.activity_main);
+			init();
+			totalCard = genLevel(++level);
+		}
+
 	};
 
 	@Override
