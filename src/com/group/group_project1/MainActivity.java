@@ -17,19 +17,21 @@ public class MainActivity extends Activity {
 	private int remainTime = 30;
 	private TextView levelText;
 	private TextView timeText;
+	private TextView scoreText;
 	private TableLayout playTableLayout;
 	private MyImageButton Images[];
 	private int totalCard = 0;
 	private int hasOpen = 0;
 	private int level = 0;
 	private int score = 0;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		levelText = (TextView) findViewById(R.id.textView1);
 		timeText = (TextView) findViewById(R.id.timer);
+		scoreText = (TextView) findViewById(R.id.scoreText);
 		// 宣告Timer
 		gameTimer = new Timer();
 		// 設定Timer(task為執行內容，0代表立刻開始,間格1秒執行一次)
@@ -39,13 +41,13 @@ public class MainActivity extends Activity {
 
 		playTableLayout = (TableLayout) findViewById(R.id.user_list);
 		totalCard = genLevel(++level);
-		
+
 	}
 
 	private int genLevel(int input) {
 		levelText.setText("Level " + String.valueOf(input));
 		Images = new MyImageButton[25];
-		int sizeX = input; // start from 1
+		int sizeX = 6*input; // start from 1
 		int sizeY = 4;
 		int numberOftypes = Math.abs(sizeX * sizeY / 2);
 		int typeCount[] = new int[numberOftypes + 1];
@@ -53,7 +55,7 @@ public class MainActivity extends Activity {
 			TableRow tr = new TableRow(this);
 			for (int j = 0; j < sizeY; j++) {
 				int index = i * (sizeY) + j;
-				Images[index] = new MyImageButton(this,MainActivity.this);
+				Images[index] = new MyImageButton(this, MainActivity.this);
 				Images[index].setOnClickListener(click);
 				tr.addView(Images[index]);
 				int type = getRandomInt(1, numberOftypes);
@@ -81,12 +83,21 @@ public class MainActivity extends Activity {
 		Timer showTimer = new Timer();
 		private boolean canClick = true;
 		private Handler myHandler = new Handler();
+
 		public void onClick(View v) {
-			button = (MyImageButton) v;
-			if (!canClick || button.isOpen())
+			if (!canClick)
 				return;
+			button = (MyImageButton) v;
+			if (button.isOpen())
+				return;
+			openNumber++;
+			if (openNumber == 2) {
+				canClick = false;
+				myHandler.postDelayed(openDelay, 500);
+			} else {
+				lastbutton = button;
+			}
 			button.open();
-			myHandler.postDelayed(openDelay, 500);
 		}
 
 		private Runnable runTimerStop = new Runnable() {
@@ -94,32 +105,34 @@ public class MainActivity extends Activity {
 				lastbutton.close();
 				button.close();
 				canClick = true;
+				openNumber = 0;
 				// 移除語法
 				myHandler.removeCallbacks(runTimerStop);
+				button = null;
+				lastbutton = null;
 			}
 		};
 		private Runnable openDelay = new Runnable() {
 			public void run() {
-				openNumber++;
-				if (openNumber == 2) {
-					if (lastbutton.getType() != button.getType()) {
-						canClick = false;
-						// 幾秒後(delaySec)呼叫runTimerStop這個Runnable，再由這個Runnable去呼叫你想要做的事情
-						myHandler.postDelayed(runTimerStop, 200);
-						remainTime--;
-					} else {
-						hasOpen = hasOpen + 2;
-						score+=level*100;
-						if (totalCard == hasOpen) {
-							hasOpen = 0;
-							playTableLayout.removeAllViewsInLayout();
-							totalCard = genLevel(++level);
-						}
-					}
-					openNumber = 0;
+				if (lastbutton.getType() != button.getType()) {
+					// 幾秒後(delaySec)呼叫runTimerStop這個Runnable，再由這個Runnable去呼叫你想要做的事情
+					myHandler.postDelayed(runTimerStop, 200);
+					remainTime = remainTime - level;
 				} else {
-					lastbutton = button;
+					hasOpen = hasOpen + 2;
+					score += level * 10 * level;
+					scoreText.setText("分數: " + String.valueOf(score));
+					if (totalCard == hasOpen) {
+						hasOpen = 0;
+						playTableLayout.removeAllViewsInLayout();
+						totalCard = genLevel(++level);
+					}
+					canClick = true;
+					openNumber = 0;
+					button = null;
+					lastbutton = null;
 				}
+
 				myHandler.removeCallbacks(openDelay);
 			}
 		};
@@ -142,7 +155,7 @@ public class MainActivity extends Activity {
 			case 1:
 				remainTime--;
 				timeText.setText(String.valueOf(remainTime));
-				if (remainTime == 0) {
+				if (remainTime <= 0) {
 					gameTimer.cancel();
 					setContentView(R.layout.end_layout);
 				}

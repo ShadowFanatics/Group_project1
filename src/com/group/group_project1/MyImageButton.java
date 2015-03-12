@@ -19,12 +19,15 @@ public class MyImageButton extends ImageButton {
 		this.setMinimumHeight(25);
 		this.setMaxWidth(25);
 		this.setMaxHeight(25);
-		setImageDrawable(getResources().getDrawable(images[0]));
+		
+		this.setPadding(5, 5, 5, 5);
+		this.setScaleType(ScaleType.CENTER_INSIDE);
+		this.setImageDrawable(getResources().getDrawable(images[0]));
+		//this.setBackground(getResources().getDrawable(images[0]));
 		cardAnimation = new CardAnimation(activity);
 	}
 
 	public void open() {
-//		setImageDrawable(getResources().getDrawable(images[type]));
 		cardAnimation.turnOverFast(this, getResources().getDrawable(images[type]));
 		isOpen = true;
 	}
