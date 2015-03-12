@@ -48,7 +48,7 @@ public class MainActivity extends Activity {
 		levelText.setText("Level " + String.valueOf(input));
 		Images = new MyImageButton[25];
 		int sizeX = input; // start from 1
-		if ( input <= 4 )
+		if ( input >= 4 )
 			sizeX = 4;
 		int sizeY = 4;
 		int numberOftypes = Math.abs(sizeX * sizeY / 2);
