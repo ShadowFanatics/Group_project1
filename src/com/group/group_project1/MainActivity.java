@@ -106,8 +106,10 @@ public class MainActivity extends Activity {
 						canClick = false;
 						// 幾秒後(delaySec)呼叫runTimerStop這個Runnable，再由這個Runnable去呼叫你想要做的事情
 						myHandler.postDelayed(runTimerStop, 200);
+						remainTime--;
 					} else {
 						hasOpen = hasOpen + 2;
+						score+=level*100;
 						if (totalCard == hasOpen) {
 							hasOpen = 0;
 							playTableLayout.removeAllViewsInLayout();

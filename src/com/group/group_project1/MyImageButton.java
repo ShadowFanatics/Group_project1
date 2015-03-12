@@ -15,10 +15,10 @@ public class MyImageButton extends ImageButton {
 
 	public MyImageButton(Context context,Activity activity) {
 		super(context);
-		this.setMinimumWidth(100);
-		this.setMinimumHeight(100);
-		this.setMaxWidth(100);
-		this.setMaxHeight(100);
+		this.setMinimumWidth(25);
+		this.setMinimumHeight(25);
+		this.setMaxWidth(25);
+		this.setMaxHeight(25);
 		setImageDrawable(getResources().getDrawable(images[0]));
 		cardAnimation = new CardAnimation(activity);
 	}
